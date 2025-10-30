@@ -20,7 +20,8 @@ const generationNames: { [key: string]: string } = {
   'all': 'All Pokémon',
 };
 
-export default async function GenerationPage({ params: { id: generationId } }: { params: { id: string } }) {
+export default async function GenerationPage({ params }: { params: { id: string } }) {
+  const { id: generationId } = params;
   const isAllPokemon = generationId === 'all';
   const parsedId = parseInt(generationId, 10);
 
