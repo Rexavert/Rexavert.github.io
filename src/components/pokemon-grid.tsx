@@ -1,58 +1,33 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
-import type { Pokemon, Hunt } from '@/types';
+import { useState, useMemo } from 'react';
+import type { Pokemon } from '@/types';
 import { PokemonAccordionItem } from './pokemon-accordion-item';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
-import { collection } from 'firebase/firestore';
-import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
-import { useAuth } from '@/firebase/provider';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
+
+// Define a simple Hunt type for local state management within this component
+interface Hunt {
+  pokemonId: number;
+  encounters: number;
+  methods: string[];
+  notes?: string;
+  location?: string;
+}
 
 interface PokemonGridProps {
   initialPokemon: Pokemon[];
+  initialHunts: Record<number, Hunt>;
+  userId: string | undefined;
 }
 
-export function PokemonGrid({ initialPokemon }: PokemonGridProps) {
+const GROUP_SIZE = 30;
+
+export function PokemonGrid({ initialPokemon, initialHunts, userId }: PokemonGridProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOption, setSortOption] = useState('id-asc');
-  const firestore = useFirestore();
-  const auth = useAuth();
-  const { user, isUserLoading } = useUser();
-
-  useEffect(() => {
-    if (!isUserLoading && !user && auth) {
-      initiateAnonymousSignIn(auth);
-    }
-  }, [isUserLoading, user, auth]);
-  
-  const userId = user?.uid;
-
-  const huntsQuery = useMemoFirebase(
-    () => (firestore && userId ? collection(firestore, 'users', userId, 'hunts') : null),
-    [firestore, userId]
-  );
-  
-  const { data: huntsData, isLoading: huntsLoading } = useCollection<Omit<Hunt, 'pokemonId'>>(huntsQuery);
-
-  const hunts = useMemo(() => {
-    if (!huntsData) return {};
-    return huntsData.reduce((acc, hunt) => {
-      const pokemonId = parseInt(hunt.id, 10);
-      if (!isNaN(pokemonId)) {
-        acc[pokemonId] = { ...hunt, pokemonId };
-      }
-      return acc;
-    }, {} as Record<number, Hunt>);
-  }, [huntsData]);
-
-  const [huntsState, setHuntsState] = useState<Record<number, Hunt>>(hunts);
-
-  useEffect(() => {
-    setHuntsState(hunts);
-  }, [hunts]);
+  const [huntsState, setHuntsState] = useState<Record<number, Hunt>>(initialHunts);
 
   const handleHuntChange = (updatedHunt: Hunt) => {
     setHuntsState(prev => ({ ...prev, [updatedHunt.pokemonId]: updatedHunt }));
@@ -111,10 +86,6 @@ export function PokemonGrid({ initialPokemon }: PokemonGridProps) {
     }
     return groups;
   }, [filteredAndSortedPokemon, searchTerm]);
-  
-  if (isUserLoading || huntsLoading) {
-    return <div className="text-center py-16">Loading shiny hunt data...</div>
-  }
   
   return (
     <div>
