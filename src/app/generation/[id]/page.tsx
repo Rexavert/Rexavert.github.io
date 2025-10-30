@@ -5,6 +5,13 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
+export async function generateStaticParams() {
+  const generations = ['1', '2', '3', '4', 'all'];
+  return generations.map((id) => ({
+    id,
+  }));
+}
+
 const generationNames: { [key: string]: string } = {
   '1': 'Generation I',
   '2': 'Generation II',
