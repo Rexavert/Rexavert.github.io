@@ -71,9 +71,13 @@ export async function getPokemonList(generation?: number): Promise<Pokemon[]> {
       });
     }
 
+    // sort by id
+    pokemonList.sort((a, b) => a.id - b.id);
+
     return pokemonList;
   } catch (error) {
     console.error("Failed to fetch Pokemon data. The PokeAPI might be down.", error);
     return [];
   }
 }
+
