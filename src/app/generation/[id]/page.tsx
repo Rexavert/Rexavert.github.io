@@ -6,7 +6,12 @@ import { Button } from '@/components/ui/button';
 import { initializeFirebase } from '@/firebase/server-init';
 import type { Hunt } from '@/types';
 
-// This function tells Next.js which dynamic pages to build at build time.
+type GenerationPageProps = {
+  params: {
+    id: string;
+  };
+};
+
 export async function generateStaticParams() {
   const generations = ['1', '2', '3', '4', 'all'];
   return generations.map((id) => ({
@@ -22,14 +27,6 @@ const generationNames: { [key: string]: string } = {
   'all': 'All Pokémon',
 };
 
-// This is the standard prop type for a dynamic page in the App Router.
-interface GenerationPageProps {
-  params: {
-    id: string;
-  };
-}
-
-// This is a server-only function to fetch data before rendering.
 async function getHuntsForUser(userId: string) {
     if (!userId) return {};
     try {
@@ -47,33 +44,25 @@ async function getHuntsForUser(userId: string) {
         });
         return hunts;
     } catch (error) {
-        // In a static build, we can't get user data, so we fail gracefully.
-        // We log it for debugging during build, but return empty data.
         console.log('Could not fetch hunts during static build (expected behavior for anonymous users).');
         return {};
     }
 }
 
-
-// The page is now an async Server Component.
 export default async function GenerationPage({ params }: GenerationPageProps) {
   const { id: generationId } = params;
   const isAllPokemon = generationId === 'all';
   const parsedId = parseInt(generationId, 10);
 
-  // Validate the generation ID.
   if (!isAllPokemon && (isNaN(parsedId) || parsedId < 1 || parsedId > 4)) {
     notFound();
   }
   
-  // Fetch all necessary data on the server during the build.
-  // The anonymous user ID is a placeholder for the static build.
   const userId = 'anonymous_user_placeholder';
   const [pokemonList, hunts] = await Promise.all([
     isAllPokemon ? getPokemonList() : getPokemonList(parsedId),
     getHuntsForUser(userId)
   ]);
-
 
   const generationName = generationNames[generationId];
   const generations = Array.from({ length: 4 }, (_, i) => i + 1);
