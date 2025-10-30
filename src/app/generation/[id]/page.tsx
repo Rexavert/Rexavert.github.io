@@ -22,13 +22,6 @@ const generationNames: { [key: string]: string } = {
   'all': 'All Pokémon',
 };
 
-// This is the standard prop type for a dynamic page in the App Router.
-interface GenerationPageProps {
-  params: {
-    id: string;
-  };
-}
-
 // This is a server-only function to fetch data before rendering.
 async function getHuntsForUser(userId: string) {
     if (!userId) return {};
@@ -55,8 +48,8 @@ async function getHuntsForUser(userId: string) {
 }
 
 
-// The page is now an async Server Component.
-export default async function GenerationPage({ params }: GenerationPageProps) {
+// The page is a Server Component, which can be async.
+export default async function GenerationPage({ params }: { params: { id: string } }) {
   const { id: generationId } = params;
   const isAllPokemon = generationId === 'all';
   const parsedId = parseInt(generationId, 10);
