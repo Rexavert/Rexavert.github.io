@@ -49,7 +49,7 @@ async function getHuntsForUser(userId: string) {
     } catch (error) {
         // In a static build, we can't get user data, so we fail gracefully.
         // We log it for debugging during build, but return empty data.
-        console.log('Could not fetch hunts during static build (expected behavior for anonymous users).', error);
+        console.log('Could not fetch hunts during static build (expected behavior for anonymous users).');
         return {};
     }
 }
@@ -122,7 +122,6 @@ export default async function GenerationPage({ params }: GenerationPageProps) {
           <PokemonGrid 
             initialPokemon={pokemonList} 
             initialHunts={hunts} 
-            userId={userId} 
           />
         </div>
       </main>

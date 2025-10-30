@@ -80,14 +80,14 @@ export function PokemonAccordionItem({ pokemon, hunt, onHuntChange, userId }: Po
     debouncedUpdateHunt({ location: newLocation });
   };
 
-  const { probability } = useMemo(() => {
+  const { probabilityText } = useMemo(() => {
     const totalRolls = 1 + methods.reduce((acc, methodId) => {
       const method = SHINY_METHODS.find(m => m.id === methodId);
       return acc + (method?.rolls || 0);
     }, 0);
     const shinyRate = BASE_ODDS / totalRolls;
     const probability = 1 - Math.pow(1 - (1 / shinyRate), encounters);
-    return { probability };
+    return { probabilityText: (probability * 100).toFixed(2) };
   }, [methods, encounters]);
 
   const serebiiUrl = `https://www.serebii.net/pokedex-dp/${pokemon.id.toString().padStart(3, '0')}.shtml`;
@@ -118,7 +118,7 @@ export function PokemonAccordionItem({ pokemon, hunt, onHuntChange, userId }: Po
                 <div className="flex items-baseline justify-center gap-1">
                     <p className="text-sm text-muted-foreground">Encounters:</p>
                     <p className="font-code text-lg font-bold text-accent text-shadow-accent">{encounters}</p>
-                    <p className="font-code text-sm text-muted-foreground">({(probability * 100).toFixed(2)}%)</p>
+                    <p className="font-code text-sm text-muted-foreground">({probabilityText}%)</p>
                 </div>
             </div>
         </AccordionTrigger>

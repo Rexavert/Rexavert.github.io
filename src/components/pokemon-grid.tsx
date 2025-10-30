@@ -1,33 +1,58 @@
 'use client';
 
-import { useState, useMemo } from 'react';
-import type { Pokemon } from '@/types';
+import { useState, useMemo, useEffect } from 'react';
+import type { Pokemon, Hunt } from '@/types';
 import { PokemonAccordionItem } from './pokemon-accordion-item';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
+import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
+import { collection } from 'firebase/firestore';
+import { useCollection } from '@/firebase/firestore/use-collection';
 
-// Define a simple Hunt type for local state management within this component
-interface Hunt {
-  pokemonId: number;
-  encounters: number;
-  methods: string[];
-  notes?: string;
-  location?: string;
-}
 
 interface PokemonGridProps {
   initialPokemon: Pokemon[];
   initialHunts: Record<number, Hunt>;
-  userId: string | undefined;
 }
 
 const GROUP_SIZE = 30;
 
-export function PokemonGrid({ initialPokemon, initialHunts, userId }: PokemonGridProps) {
+export function PokemonGrid({ initialPokemon, initialHunts }: PokemonGridProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOption, setSortOption] = useState('id-asc');
+  
+  const { user } = useUser();
+  const userId = user?.uid;
+  const firestore = useFirestore();
+
+  const huntsQuery = useMemoFirebase(
+    () => (firestore && userId ? collection(firestore, 'users', userId, 'hunts') : null),
+    [firestore, userId]
+  );
+  
+  const { data: huntsData } = useCollection<Omit<Hunt, 'pokemonId'>>(huntsQuery);
+
+  const liveHunts = useMemo(() => {
+    if (!huntsData) return {};
+    return huntsData.reduce((acc, hunt) => {
+      const pokemonId = parseInt(hunt.id, 10);
+      if (!isNaN(pokemonId)) {
+        acc[pokemonId] = { ...hunt, pokemonId };
+      }
+      return acc;
+    }, {} as Record<number, Hunt>);
+  }, [huntsData]);
+
   const [huntsState, setHuntsState] = useState<Record<number, Hunt>>(initialHunts);
+
+  useEffect(() => {
+    // When the user logs in and live hunts are loaded, merge them with the initial static data
+    if(userId && huntsData) {
+      setHuntsState(prev => ({...prev, ...liveHunts}));
+    }
+  }, [userId, huntsData, liveHunts]);
+
 
   const handleHuntChange = (updatedHunt: Hunt) => {
     setHuntsState(prev => ({ ...prev, [updatedHunt.pokemonId]: updatedHunt }));
