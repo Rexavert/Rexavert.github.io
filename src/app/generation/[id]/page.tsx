@@ -27,10 +27,6 @@ const generationNames: { [key: string]: string } = {
   'all': 'All Pokémon',
 };
 
-<<<<<<< HEAD
-=======
-// This is a server-only function to fetch data before rendering.
->>>>>>> 6ca3dd13b7971eb9368a28d605054c9beac65e82
 async function getHuntsForUser(userId: string) {
     if (!userId) return {};
     try {
@@ -53,13 +49,7 @@ async function getHuntsForUser(userId: string) {
     }
 }
 
-<<<<<<< HEAD
 export default async function GenerationPage({ params }: GenerationPageProps) {
-=======
-
-// The page is a Server Component, which can be async.
-export default async function GenerationPage({ params }: { params: { id: string } }) {
->>>>>>> 6ca3dd13b7971eb9368a28d605054c9beac65e82
   const { id: generationId } = params;
   const isAllPokemon = generationId === 'all';
   const parsedId = parseInt(generationId, 10);
