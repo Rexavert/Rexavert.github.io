@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Allows users to read and write their own user profile data.
+     * @path /users/{userId}
+     * @allow (get, create, update, delete) if request.auth.uid == userId
+     * @deny (get) if request.auth == null
+     * @deny (create, update, delete) if request.auth == null
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
+    }
+
+    /**
+     * @description Allows public read access to Pokemon data. Only the user can create, update, and delete Pokemon data.
+     * @path /pokemon/{pokemonId}
+     * @allow (get, list) if true
+     * @allow (create, update, delete) if false // TODO: Add owner validation once the schema is updated with an ownership field.
+     * @deny (create) if true
+     * @principle Allows public read access while restricting writes.
+     */
+    match /pokemon/{pokemonId} {
+      allow get, list: if true;
+      allow create, update, delete: if request.auth != null;
+    }
+
+    /**
+     * @description Allows public read access to shiny hunting method data. Only the user can create, update, and delete shiny hunting method data.
+     * @path /shiny_hunting_methods/{shinyHuntingMethodId}
+     * @allow (get, list) if true
+     * @allow (create, update, delete) if false // TODO: Add owner validation once the schema is updated with an ownership field.
+     * @deny (create) if true
+     * @principle Allows public read access while restricting writes.
+     */
+    match /shiny_hunting_methods/{shinyHuntingMethodId} {
+      allow get, list: if true;
+      allow create, update, delete: if request.auth != null;
+    }
+
+    /**
+     * @description Allows users to read, create, update, and delete their own shiny hunt data.
+     * @path /users/{userId}/hunts/{huntId}
+     * @allow (list, get) if request.auth.uid == userId
+     * @allow (create) if request.auth.uid == userId
+     * @allow (update, delete) if request.auth.uid == userId
+     * @deny (create) if request.auth == null
+     * @deny (update, delete) if request.auth == null
+     * @principle Enforces document ownership for all operations.
+     */
+    match /users/{userId}/hunts/{huntId} {
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+        allow get: if isOwner(userId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId);
+        allow update: if isOwner(userId);
+        allow delete: if isOwner(userId);
+    }
+  }
+}

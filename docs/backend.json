@@ -1,0 +1,139 @@
+{
+  "entities": {
+    "Pokemon": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Pokemon",
+      "type": "object",
+      "description": "Represents a Pokemon, including its identifier, dex number, name, and shiny sprite URL.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Pokemon entity."
+        },
+        "dexNumber": {
+          "type": "number",
+          "description": "The Pokedex number of the Pokemon."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the Pokemon."
+        },
+        "shinySpriteUrl": {
+          "type": "string",
+          "description": "URL of the shiny sprite image for the Pokemon.",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "id",
+        "dexNumber",
+        "name",
+        "shinySpriteUrl"
+      ]
+    },
+    "ShinyHunt": {
+      "$schema": "http://json-schema.org/draft-07/schema#",_hunts
+      "title": "ShinyHunt",
+      "type": "object",
+      "description": "Represents a specific shiny hunt for a Pokemon, including the number of encounters and shiny hunting method.",
+      "properties": {
+        "pokemonId": {
+          "type": "number",
+          "description": "Reference to the Pokemon being hunted."
+        },
+        "encounters": {
+          "type": "number",
+          "description": "The number of encounters for this shiny hunt."
+        },
+        "methods": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "A list of shiny hunting method IDs being used."
+        },
+        "notes": {
+          "type": "string",
+          "description": "User's notes for this shiny hunt."
+        }
+      },
+      "required": [
+        "pokemonId",
+        "encounters",
+        "methods"
+      ]
+    },
+    "ShinyHuntingMethod": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ShinyHuntingMethod",
+      "type": "object",
+      "description": "Represents a specific shiny hunting method, including its name and any relevant modifiers.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ShinyHuntingMethod entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the shiny hunting method (e.g., Masuda method)."
+        },
+        "modifier": {
+          "type": "number",
+          "description": "A modifier that affects the shiny odds calculation."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "modifier"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the application.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the user.",
+          "format": "email"
+        }
+      },
+      "required": [
+        "id",
+        "email"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "/users/{userId}/hunts/{huntId}": {
+      "schema": {
+        "$ref": "#/entities/ShinyHunt"
+      },
+      "description": "Stores shiny hunt data for each user. Only the authenticated user can access their own hunts."
+    },
+    "/pokemon/{pokemonId}": {
+      "schema": {
+        "$ref": "#/entities/Pokemon"
+      },
+      "description": "Stores information about Pokemon, including name, dex number, and shiny sprite URL. This collection has global read access."
+    },
+    "/shiny_hunting_methods/{shinyHuntingMethodId}": {
+      "schema": {
+        "$ref": "#/entities/ShinyHuntingMethod"
+      },
+      "description": "Stores available shiny hunting methods and their modifiers.  This collection has global read access."
+    }
+  }
+}
