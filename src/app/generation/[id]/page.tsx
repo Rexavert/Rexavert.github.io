@@ -45,8 +45,15 @@ const generationNames: { [key: string]: string } = {
   'all': 'All Pokémon',
 };
 
+// Define the type for the page props
+type GenerationPageProps = {
+  params: {
+    id: string;
+  };
+};
+
 // The page is a Server Component, which can be async.
-export default async function GenerationPage({ params }: { params: { id: string } }) {
+export default async function GenerationPage({ params }: GenerationPageProps) {
   const { id: generationId } = params;
   const isAllPokemon = generationId === 'all';
   const parsedId = parseInt(generationId, 10);
@@ -61,7 +68,7 @@ export default async function GenerationPage({ params }: { params: { id: string 
     getHuntsForUser(userId)
   ]);
 
-  const generationName = generationNames[generationId];
+  const generationName = generationNames[generationId] || 'Pokémon';
   const generations = Array.from({ length: 4 }, (_, i) => i + 1);
 
   return (
