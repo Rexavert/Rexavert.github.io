@@ -15,7 +15,7 @@ export async function generateStaticParams() {
 }
 
 async function getHuntsForUser(userId: string) {
-  if (!userId) return {};
+  if (!userId || userId === 'anonymous_user_placeholder') return {};
   try {
     const { firestore } = initializeFirebase();
     const huntsSnapshot = await firestore.collection(`users/${userId}/hunts`).get();
@@ -32,7 +32,7 @@ async function getHuntsForUser(userId: string) {
     return hunts;
   } catch (error) {
     // This is expected during static build if auth isn't configured for the build environment
-    console.log('Could not fetch hunts during static build. This is expected for anonymous users.');
+    console.log('Could not fetch hunts during static build. This is expected.');
     return {};
   }
 }
@@ -89,6 +89,9 @@ export default async function GenerationPage({ params }: { params: { id: string 
             </Button>
             <Button asChild variant="secondary" size="sm">
               <Link href="/stats">Stats</Link>
+            </Button>
+             <Button asChild variant="secondary" size="sm">
+              <Link href="/current-hunt">Hunts</Link>
             </Button>
           </div>
         </div>

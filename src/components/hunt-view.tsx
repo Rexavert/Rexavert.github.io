@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -53,7 +54,11 @@ export function HuntView({ pokemon, hunt, onHuntChange, userId }: HuntViewProps)
   
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Pause') {
+      // Prevent incrementing if an input or textarea is focused
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      if (event.code === 'Space' || event.key === ' ') {
         event.preventDefault();
         handleEncounterChange(1);
       }
@@ -142,6 +147,7 @@ export function HuntView({ pokemon, hunt, onHuntChange, userId }: HuntViewProps)
                     +100
                 </Button>
             </div>
+             <p className="text-xs text-muted-foreground">Or press spacebar to add an encounter</p>
             <Button asChild variant="outline" className="w-full">
                 <Link href={serebiiUrl} target="_blank">
                     <BookOpen className="mr-2 h-4 w-4" />

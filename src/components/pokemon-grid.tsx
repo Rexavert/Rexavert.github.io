@@ -50,9 +50,9 @@ export function PokemonGrid({ initialPokemon, initialHunts }: PokemonGridProps) 
   useEffect(() => {
     // When the user logs in and live hunts are loaded, merge them with the initial static data
     if(userId && huntsData) {
-      setHuntsState(prev => ({...prev, ...liveHunts}));
+      setHuntsState(prev => ({...initialHunts, ...liveHunts}));
     }
-  }, [userId, huntsData, liveHunts]);
+  }, [userId, huntsData, liveHunts, initialHunts]);
 
 
   const handleHuntChange = (updatedHunt: Hunt) => {

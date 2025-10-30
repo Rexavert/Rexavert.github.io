@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
@@ -30,7 +31,7 @@ export default function Home() {
             <Link href="/stats">Stats Page</Link>
           </Button>
           <Button asChild size="lg">
-            <Link href="/current-hunt">Current Hunts</Link>
+            <Link href="/current-hunt">Manage Hunts</Link>
           </Button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">

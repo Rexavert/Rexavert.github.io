@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -11,7 +12,7 @@ import { PokemonSearch } from '@/components/pokemon-search';
 import { HuntView } from '@/components/hunt-view';
 import { Button } from '@/components/ui/button';
 import { RecentSearches } from '@/components/recent-searches';
-import { Home } from 'lucide-react';
+import { Home, ArrowLeft } from 'lucide-react';
 
 const RECENT_POKEMON_KEY = 'shinyhunt-recent-pokemon';
 
@@ -115,15 +116,15 @@ export default function CurrentHuntPage() {
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
           <div className="text-center md:text-left">
             <div className="flex items-center gap-4">
-              <h1 className="text-4xl md:text-6xl font-headline font-bold text-primary-foreground tracking-tighter">
-                Manage <span className="text-accent text-shadow-accent">Hunts</span>
-              </h1>
-              <Button asChild variant="outline" size="icon">
+               <Button asChild variant="outline" size="icon">
                 <Link href="/">
                   <Home className="h-5 w-5" />
                   <span className="sr-only">Home</span>
                 </Link>
               </Button>
+              <h1 className="text-4xl md:text-6xl font-headline font-bold text-primary-foreground tracking-tighter">
+                Manage <span className="text-accent text-shadow-accent">Hunts</span>
+              </h1>
             </div>
             <p className="text-lg md:text-xl text-muted-foreground mt-2 max-w-2xl">
               {selectedPokemon 
@@ -145,7 +146,8 @@ export default function CurrentHuntPage() {
           {selectedPokemon ? (
             <div>
               <Button onClick={clearSelection} variant="outline" className="mb-4">
-                Search for another Pokémon
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Search
               </Button>
               <HuntView
                 pokemon={selectedPokemon}
