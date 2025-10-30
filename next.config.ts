@@ -1,6 +1,5 @@
-import type {NextConfig} from 'next';
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   output: 'export',
   images: {
     unoptimized: true,
@@ -18,13 +17,12 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
-        protocol: 'https'
-        ,
+        protocol: 'https',
         hostname: 'picsum.photos',
         port: '',
         pathname: '/**',
       },
-       {
+      {
         protocol: 'https',
         hostname: 'img.pokemondb.net',
         port: '',
@@ -32,7 +30,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-   typescript: {
+  typescript: {
     ignoreBuildErrors: true,
   },
   eslint: {
@@ -40,4 +38,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
