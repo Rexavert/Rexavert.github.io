@@ -1,3 +1,4 @@
+
 import type { Pokemon, Hunt } from '@/types';
 import { PokemonGrid } from '@/components/pokemon-grid';
 import Link from 'next/link';
