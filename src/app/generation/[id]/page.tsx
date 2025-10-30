@@ -4,10 +4,9 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { initializeFirebase } from '@/firebase/server-init';
-import type { Hunt, Pokemon } from '@/types';
+import type { Hunt } from '@/types';
 
 // This special Next.js function tells the build process which pages to generate.
-// We will generate a page for each generation (1, 2, 3, 4) and one for 'all'.
 export async function generateStaticParams() {
   const generations = ['1', '2', '3', '4', 'all'];
   return generations.map((id) => ({
@@ -47,8 +46,7 @@ async function getHuntsForUser(userId: string) {
     }
 }
 
-// The page is a Server Component, but it is NOT async itself.
-// The data is fetched before the component is rendered.
+// The page is a Server Component, which can be async.
 export default async function GenerationPage({ params }: { params: { id: string } }) {
   const { id: generationId } = params;
   const isAllPokemon = generationId === 'all';
