@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { getPokemonList } from '@/lib/pokemon-api';
 import { initializeFirebase } from '@/firebase/server-init';
 
-// This function tells Next.js which dynamic pages to build at build time.
 export async function generateStaticParams() {
+  // Generate routes for generations 1-4 and an 'all' page
   const generations = ['1', '2', '3', '4', 'all'];
   return generations.map((id) => ({
     id,
@@ -14,25 +14,26 @@ export async function generateStaticParams() {
 }
 
 async function getHuntsForUser(userId: string) {
-    if (!userId) return {};
-    try {
-        const { firestore } = initializeFirebase();
-        const huntsSnapshot = await firestore.collection(`users/${userId}/hunts`).get();
-        if (huntsSnapshot.empty) {
-            return {};
-        }
-        const hunts: Record<number, Hunt> = {};
-        huntsSnapshot.forEach(doc => {
-            const pokemonId = parseInt(doc.id, 10);
-            if (!isNaN(pokemonId)) {
-                hunts[pokemonId] = { pokemonId, ...(doc.data() as Omit<Hunt, 'pokemonId'>) };
-            }
-        });
-        return hunts;
-    } catch (error) {
-        console.log('Could not fetch hunts during static build (expected behavior for anonymous users).');
-        return {};
+  if (!userId) return {};
+  try {
+    const { firestore } = initializeFirebase();
+    const huntsSnapshot = await firestore.collection(`users/${userId}/hunts`).get();
+    if (huntsSnapshot.empty) {
+      return {};
     }
+    const hunts: Record<number, Hunt> = {};
+    huntsSnapshot.forEach(doc => {
+      const pokemonId = parseInt(doc.id, 10);
+      if (!isNaN(pokemonId)) {
+        hunts[pokemonId] = { pokemonId, ...(doc.data() as Omit<Hunt, 'pokemonId'>) };
+      }
+    });
+    return hunts;
+  } catch (error) {
+    // This is expected during static build if auth isn't configured for the build environment
+    console.log('Could not fetch hunts during static build. This is expected for anonymous users.');
+    return {};
+  }
 }
 
 const generationNames: { [key: string]: string } = {
@@ -50,9 +51,10 @@ export default async function GenerationPage({ params }: { params: { id: string 
   const parsedId = parseInt(generationId, 10);
   
   // A placeholder user ID for the static build process.
-  // Real user data will be fetched on the client.
+  // Real user data will be fetched on the client side inside PokemonGrid.
   const userId = "anonymous_user_placeholder";
   
+  // Fetch data at the top level of the component
   const [pokemonList, hunts] = await Promise.all([
     isAllPokemon ? getPokemonList() : getPokemonList(parsedId),
     getHuntsForUser(userId)
