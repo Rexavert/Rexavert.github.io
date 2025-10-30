@@ -4,13 +4,16 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { initializeFirebase } from '@/firebase/server-init';
-import type { Hunt } from '@/types';
+import type { Hunt, Pokemon } from '@/types';
 
-type GenerationPageProps = {
-  params: {
-    id: string;
-  };
-};
+// This special Next.js function tells the build process which pages to generate.
+// We will generate a page for each generation (1, 2, 3, 4) and one for 'all'.
+export async function generateStaticParams() {
+  const generations = ['1', '2', '3', '4', 'all'];
+  return generations.map((id) => ({
+    id,
+  }));
+}
 
 const generationNames: { [key: string]: string } = {
   '1': 'Generation I',
@@ -37,12 +40,16 @@ async function getHuntsForUser(userId: string) {
         });
         return hunts;
     } catch (error) {
+        // This is expected during a static build when no user is logged in.
+        // We log it for debugging but return an empty object so the build doesn't fail.
         console.log('Could not fetch hunts during static build (expected behavior for anonymous users).');
         return {};
     }
 }
 
-export default async function GenerationPage({ params }: GenerationPageProps) {
+// The page is a Server Component, but it is NOT async itself.
+// The data is fetched before the component is rendered.
+export default async function GenerationPage({ params }: { params: { id: string } }) {
   const { id: generationId } = params;
   const isAllPokemon = generationId === 'all';
   const parsedId = parseInt(generationId, 10);
@@ -51,7 +58,10 @@ export default async function GenerationPage({ params }: GenerationPageProps) {
     notFound();
   }
   
+  // A placeholder user ID for the static build process.
   const userId = 'anonymous_user_placeholder';
+  
+  // Fetch the data required for the page. This happens at build time.
   const [pokemonList, hunts] = await Promise.all([
     isAllPokemon ? getPokemonList() : getPokemonList(parsedId),
     getHuntsForUser(userId)
@@ -60,6 +70,7 @@ export default async function GenerationPage({ params }: GenerationPageProps) {
   const generationName = generationNames[generationId];
   const generations = Array.from({ length: 4 }, (_, i) => i + 1);
 
+  // The component returns JSX, using the data that was just fetched.
   return (
     <div className="min-h-screen bg-background text-foreground">
       <nav className="p-2 bg-card border-b border-border">
