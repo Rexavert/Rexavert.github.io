@@ -1,13 +1,12 @@
 
-import type { Pokemon, Hunt } from '@/types';
+import { getPokemonList } from '@/lib/pokemon-api';
+import { initializeFirebase } from '@/firebase/server-init';
+import type { Hunt } from '@/types';
 import { PokemonGrid } from '@/components/pokemon-grid';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { getPokemonList } from '@/lib/pokemon-api';
-import { initializeFirebase } from '@/firebase/server-init';
 
 export async function generateStaticParams() {
-  // Generate routes for generations 1-4 and an 'all' page
   const generations = ['1', '2', '3', '4', 'all'];
   return generations.map((id) => ({
     id,
@@ -31,7 +30,6 @@ async function getHuntsForUser(userId: string) {
     });
     return hunts;
   } catch (error) {
-    // This is expected during static build if auth isn't configured for the build environment
     console.log('Could not fetch hunts during static build. This is expected.');
     return {};
   }
@@ -45,24 +43,20 @@ const generationNames: { [key: string]: string } = {
   'all': 'All Pokémon',
 };
 
-// Define the type for the page props
-type GenerationPageProps = {
+// This is the correct props type for a dynamic page in App Router
+interface GenerationPageProps {
   params: {
     id: string;
   };
-};
+}
 
-// The page is a Server Component, which can be async.
 export default async function GenerationPage({ params }: GenerationPageProps) {
   const { id: generationId } = params;
   const isAllPokemon = generationId === 'all';
   const parsedId = parseInt(generationId, 10);
   
-  // A placeholder user ID for the static build process.
-  // Real user data will be fetched on the client side inside PokemonGrid.
   const userId = "anonymous_user_placeholder";
   
-  // Fetch data at the top level of the component
   const [pokemonList, hunts] = await Promise.all([
     isAllPokemon ? getPokemonList() : getPokemonList(parsedId),
     getHuntsForUser(userId)
