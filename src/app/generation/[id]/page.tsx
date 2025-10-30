@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { initializeFirebase } from '@/firebase/server-init';
 import type { Hunt } from '@/types';
 
-// This special Next.js function tells the build process which pages to generate.
 export async function generateStaticParams() {
   const generations = ['1', '2', '3', '4', 'all'];
   return generations.map((id) => ({
@@ -39,8 +38,6 @@ async function getHuntsForUser(userId: string) {
         });
         return hunts;
     } catch (error) {
-        // This is expected during a static build when no user is logged in.
-        // We log it for debugging but return an empty object so the build doesn't fail.
         console.log('Could not fetch hunts during static build (expected behavior for anonymous users).');
         return {};
     }
@@ -56,10 +53,8 @@ export default async function GenerationPage({ params }: { params: { id: string 
     notFound();
   }
   
-  // A placeholder user ID for the static build process.
   const userId = 'anonymous_user_placeholder';
   
-  // Fetch the data required for the page. This happens at build time.
   const [pokemonList, hunts] = await Promise.all([
     isAllPokemon ? getPokemonList() : getPokemonList(parsedId),
     getHuntsForUser(userId)
@@ -68,7 +63,6 @@ export default async function GenerationPage({ params }: { params: { id: string 
   const generationName = generationNames[generationId];
   const generations = Array.from({ length: 4 }, (_, i) => i + 1);
 
-  // The component returns JSX, using the data that was just fetched.
   return (
     <div className="min-h-screen bg-background text-foreground">
       <nav className="p-2 bg-card border-b border-border">
