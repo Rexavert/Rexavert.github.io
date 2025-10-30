@@ -51,7 +51,7 @@ export default async function GenerationPage({ params }: { params: { id: string 
   
   // A placeholder user ID for the static build process.
   // Real user data will be fetched on the client.
-  const userId = 'anonymous_user_placeholder';
+  const userId = "anonymous_user_placeholder";
   
   const [pokemonList, hunts] = await Promise.all([
     isAllPokemon ? getPokemonList() : getPokemonList(parsedId),
