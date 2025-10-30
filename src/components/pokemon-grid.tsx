@@ -13,23 +13,55 @@ import { useAuth } from '@/firebase/provider';
 
 interface PokemonGridProps {
   initialPokemon: Pokemon[];
-  hunts: Record<number, Hunt>;
-  huntsLoading: boolean;
-  onHuntChange: (updatedHunt: Hunt) => void;
-  userId?: string;
-  isUserLoading: boolean;
 }
 
-const GROUP_SIZE = 30;
-
-export function PokemonGrid({ initialPokemon, hunts, huntsLoading, onHuntChange, userId, isUserLoading }: PokemonGridProps) {
+export function PokemonGrid({ initialPokemon }: PokemonGridProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOption, setSortOption] = useState('id-asc');
+  const firestore = useFirestore();
+  const auth = useAuth();
+  const { user, isUserLoading } = useUser();
+
+  useEffect(() => {
+    if (!isUserLoading && !user && auth) {
+      initiateAnonymousSignIn(auth);
+    }
+  }, [isUserLoading, user, auth]);
+  
+  const userId = user?.uid;
+
+  const huntsQuery = useMemoFirebase(
+    () => (firestore && userId ? collection(firestore, 'users', userId, 'hunts') : null),
+    [firestore, userId]
+  );
+  
+  const { data: huntsData, isLoading: huntsLoading } = useCollection<Omit<Hunt, 'pokemonId'>>(huntsQuery);
+
+  const hunts = useMemo(() => {
+    if (!huntsData) return {};
+    return huntsData.reduce((acc, hunt) => {
+      const pokemonId = parseInt(hunt.id, 10);
+      if (!isNaN(pokemonId)) {
+        acc[pokemonId] = { ...hunt, pokemonId };
+      }
+      return acc;
+    }, {} as Record<number, Hunt>);
+  }, [huntsData]);
+
+  const [huntsState, setHuntsState] = useState<Record<number, Hunt>>(hunts);
+
+  useEffect(() => {
+    setHuntsState(hunts);
+  }, [hunts]);
+
+  const handleHuntChange = (updatedHunt: Hunt) => {
+    setHuntsState(prev => ({ ...prev, [updatedHunt.pokemonId]: updatedHunt }));
+  };
 
   const filteredAndSortedPokemon = useMemo(() => {
     const pokemonWithHunts = initialPokemon.map(p => ({
       ...p,
-      encounters: hunts[p.id]?.encounters || 0,
+      encounters: huntsState[p.id]?.encounters || 0,
     }));
     
     let filtered = pokemonWithHunts.filter(p =>
@@ -57,7 +89,7 @@ export function PokemonGrid({ initialPokemon, hunts, huntsLoading, onHuntChange,
     });
 
     return filtered;
-  }, [searchTerm, sortOption, initialPokemon, hunts]);
+  }, [searchTerm, sortOption, initialPokemon, huntsState]);
 
   const pokemonGroups = useMemo(() => {
     if (searchTerm) {
@@ -70,8 +102,8 @@ export function PokemonGrid({ initialPokemon, hunts, huntsLoading, onHuntChange,
     const groups = [];
     for (let i = 0; i < filteredAndSortedPokemon.length; i += GROUP_SIZE) {
       const group = filteredAndSortedPokemon.slice(i, i + GROUP_SIZE);
-      const startId = i + 1;
-      const endId = i + group.length;
+      const startId = group[0]?.id;
+      const endId = group[group.length -1]?.id;
       groups.push({
         title: `Box #${groups.length + 1} (${startId}-${endId})`,
         pokemon: group
@@ -121,8 +153,8 @@ export function PokemonGrid({ initialPokemon, hunts, huntsLoading, onHuntChange,
                             <PokemonAccordionItem
                                 key={pokemon.id}
                                 pokemon={pokemon}
-                                hunt={hunts[pokemon.id]}
-                                onHuntChange={onHuntChange}
+                                hunt={huntsState[pokemon.id]}
+                                onHuntChange={handleHuntChange}
                                 userId={userId}
                             />
                         ))}
